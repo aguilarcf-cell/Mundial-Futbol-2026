@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mundial 2026 — Fixture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+  :root {
+    --bg: #0a0f1e; --surface: #111827; --card: #1a2235; --border: #252f45;
+    --accent: #c9a227; --accent2: #e63946; --text: #e8ecf0; --muted: #8896a8;
+    --green: #2ecc71; --red: #e74c3c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+  header {
+    background: linear-gradient(135deg, #0a0f1e 0%, #1a2235 50%, #0d1929 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 24px 20px 20px; text-align: center; position: relative; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block; font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); background: rgba(201,162,39,0.12);
+    border: 1px solid rgba(201,162,39,0.3); padding: 4px 12px; border-radius: 2px; margin-bottom: 10px;
+  }
+  h1 { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(32px,6vw,56px); font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
+  h1 span { color: var(--accent); }
+  .header-sub { font-size: 13px; color: var(--muted); margin-top: 6px; letter-spacing: 0.5px; }
+  .nav-tabs { display: flex; overflow-x: auto; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 12px; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex-shrink: 0; padding: 14px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .section { display: none; padding: 20px; max-width: 900px; margin: 0 auto; }
+  .section.active { display: block; }
+  .group-block { margin-bottom: 28px; }
+  .group-label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; padding-left: 2px; }
+  .match-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; transition: border-color 0.2s; }
+  .match-card:hover { border-color: #3a4a66; }
+  .match-card.has-result { border-left: 3px solid var(--accent); }
+  .team { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text); }
+  .team.right { flex-direction: row-reverse; text-align: right; }
+  .team-flag { font-size: 20px; line-height: 1; flex-shrink: 0; }
+  .score-block { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .score-input { width: 40px; height: 38px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; -moz-appearance: textfield; }
+  .score-input::-webkit-inner-spin-button, .score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .score-input:focus { border-color: var(--accent); background: #1f2d45; }
+  .score-sep { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--muted); user-select: none; }
+  .match-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); gap: 8px; grid-column: 1 / -1; }
+  .standings-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  .standings-table th { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: center; }
+  .standings-table th:first-child { text-align: left; padding-left: 12px; }
+  .standings-table td { padding: 7px 8px; text-align: center; border-bottom: 1px solid rgba(37,47,69,0.5); font-size: 13px; }
+  .standings-table td:first-child { text-align: left; padding-left: 12px; font-weight: 600; }
+  .standings-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pos-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700; margin-right: 6px; }
+  .pos-1, .pos-2 { background: rgba(201,162,39,0.2); color: var(--accent); }
+  .pos-3 { background: rgba(46,204,113,0.15); color: var(--green); }
+  .pos-4 { background: rgba(116,125,140,0.15); color: var(--muted); }
+  .pts-cell { font-weight: 700; color: var(--accent); font-size: 15px; }
+  .ko-round-title { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 1px; color: var(--accent); margin: 24px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .ko-match { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin-bottom: 8px; transition: border-color 0.2s; }
+  .ko-match:hover { border-color: #3a4a66; }
+  .ko-match.has-result { border-left: 3px solid var(--accent2); }
+  .ko-team-input { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600; padding: 6px 10px; width: 100%; outline: none; transition: border-color 0.2s; }
+  .ko-team-input:focus { border-color: var(--accent); }
+  .ko-team-input.right { text-align: right; }
+  .ko-team-input::placeholder { color: var(--muted); font-weight: 400; font-style: italic; }
+  .stats-bar { display: flex; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; margin-bottom: 24px; }
+  .stat-item { flex: 1; min-width: 80px; text-align: center; }
+  .stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-top: 3px; }
+  .save-btn { background: var(--accent); color: #000; border: none; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 8px 18px; cursor: pointer; transition: opacity 0.2s; display: block; margin: 20px auto 0; }
+  .save-btn:hover { opacity: 0.85; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--green); color: #000; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; padding: 10px 24px; border-radius: 4px; transition: transform 0.3s ease; z-index: 999; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  @media (max-width: 600px) {
+    .team { font-size: 12px; }
+    .score-input { width: 34px; height: 34px; font-size: 17px; }
+    .match-card { padding: 10px 12px; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-badge">FIFA World Cup 2026</div>
+  <h1>FIXTURE <span>MUNDIAL</span></h1>
+  <p class="header-sub">104 partidos &middot; 48 selecciones &middot; 11 jun &ndash; 19 jul 2026</p>
+</header>
+<div class="nav-tabs">
+  <div class="nav-tab active" id="tab-btn-grupos" onclick="showTab('grupos',this)">Grupos</div>
+  <div class="nav-tab" id="tab-btn-posiciones" onclick="showTab('posiciones',this)">Posiciones</div>
+  <div class="nav-tab" id="tab-btn-eliminatoria" onclick="showTab('eliminatoria',this)">Eliminatoria</div>
+</div>
+<div id="tab-grupos" class="section active">
+  <div id="statsBar" class="stats-bar">
+    <div class="stat-item"><div class="stat-num" id="statJugados">0</div><div class="stat-label">Jugados</div></div>
+    <div class="stat-item"><div class="stat-num" id="statGoles">0</div><div class="stat-label">Goles</div></div>
+    <div class="stat-item"><div class="stat-num" id="statRestantes">48</div><div class="stat-label">Restantes</div></div>
+    <div class="stat-item"><div class="stat-num" id="statPromGoles">&#8212;</div><div class="stat-label">Goles/partido</div></div>
+  </div>
+  <div id="matchesContainer"></div>
+  <button class="save-btn" onclick="saveData()">&#128190; Guardar resultados</button>
+</div>
+<div id="tab-posiciones" class="section">
+  <div id="standingsContainer"></div>
+</div>
+<div id="tab-eliminatoria" class="section">
+  <div id="knockoutContainer"></div>
+  <button class="save-btn" onclick="saveData()">&#128190; Guardar resultados</button>
+</div>
+<div class="toast" id="toast">&#10003; Guardado correctamente</div>
+
+<script>
+// Equipos: { name, flag }
+var TEAMS = {
+  'MEX': { name: 'México', flag: '🇲🇽' },
+  'RSA': { name: 'Sudáfrica', flag: '🇿🇦' },
+  'KOR': { name: 'Corea del Sur', flag: '🇰🇷' },
+  'CZE': { name: 'Rep. Checa', flag: '🇨🇿' },
+  'CAN': { name: 'Canadá', flag: '🇨🇦' },
+  'BIH': { name: 'Bosnia y Herz.', flag: '🇧🇦' },
+  'QAT': { name: 'Qatar', flag: '🇶🇦' },
+  'SUI': { name: 'Suiza', flag: '🇨🇭' },
+  'BRA': { name: 'Brasil', flag: '🇧🇷' },
+  'MAR': { name: 'Marruecos', flag: '🇲🇦' },
+  'HAI': { name: 'Haití', flag: '🇭🇹' },
+  'SCO': { name: 'Escocia', flag: '🏴' },
+  'USA': { name: 'EE.UU.', flag: '🇺🇸' },
+  'PAR': { name: 'Paraguay', flag: '🇵🇾' },
+  'AUS': { name: 'Australia', flag: '🇦🇺' },
+  'TUR': { name: 'Turquía', flag: '🇹🇷' },
+  'GER': { name: 'Alemania', flag: '🇩🇪' },
+  'CUW': { name: 'Curazao', flag: '🇨🇼' },
+  'CIV': { name: 'Costa de Marfil', flag: '🇨🇮' },
+  'ECU': { name: 'Ecuador', flag: '🇪🇨' },
+  'NED': { name: 'Países Bajos', flag: '🇳🇱' },
+  'JPN': { name: 'Japón', flag: '🇯🇵' },
+  'SWE': { name: 'Suecia', flag: '🇸🇪' },
+  'TUN': { name: 'Túnez', flag: '🇹🇳' },
+  'BEL': { name: 'Bélgica', flag: '🇧🇪' },
+  'EGY': { name: 'Egipto', flag: '🇪🇬' },
+  'IRN': { name: 'Irán', flag: '🇮🇷' },
+  'NZL': { name: 'Nueva Zelanda', flag: '🇳🇿' },
+  'ESP': { name: 'España', flag: '🇪🇸' },
+  'CPV': { name: 'Cabo Verde', flag: '🇨🇻' },
+  'KSA': { name: 'Arabia Saudita', flag: '🇸🇦' },
+  'URU': { name: 'Uruguay', flag: '🇺🇾' },
+  'FRA': { name: 'Francia', flag: '🇫🇷' },
+  'SEN': { name: 'Senegal', flag: '🇸🇳' },
+  'IRQ': { name: 'Irak', flag: '🇮🇶' },
+  'NOR': { name: 'Noruega', flag: '🇳🇴' },
+  'ARG': { name: 'Argentina', flag: '🇦🇷' },
+  'ALG': { name: 'Argelia', flag: '🇩🇿' },
+  'AUT': { name: 'Austria', flag: '🇦🇹' },
+  'JOR': { name: 'Jordania', flag: '🇯🇴' },
+  'POR': { name: 'Portugal', flag: '🇵🇹' },
+  'COD': { name: 'RD Congo', flag: '🇨🇩' },
+  'UZB': { name: 'Uzbekistán', flag: '🇺🇿' },
+  'COL': { name: 'Colombia', flag: '🇨🇴' },
+  'ENG': { name: 'Inglaterra', flag: '🏴' },
+  'CRO': { name: 'Croacia', flag: '🇭🇷' },
+  'GHA': { name: 'Ghana', flag: '🇬🇭' },
+  'PAN': { name: 'Panamá', flag: '🇵🇦' }
+};
+
+var GROUPS = {
+  A: ['MEX','RSA','KOR','CZE'],
+  B: ['CAN','BIH','QAT','SUI'],
+  C: ['BRA','MAR','HAI','SCO'],
+  D: ['USA','PAR','AUS','TUR'],
+  E: ['GER','CUW','CIV','ECU'],
+  F: ['NED','JPN','SWE','TUN'],
+  G: ['BEL','EGY','IRN','NZL'],
+  H: ['ESP','CPV','KSA','URU'],
+  I: ['FRA','SEN','IRQ','NOR'],
+  J: ['ARG','ALG','AUT','JOR'],
+  K: ['POR','COD','UZB','COL'],
+  L: ['ENG','CRO','GHA','PAN']
+};
+
+// [grupo, local, visitante, fecha, sede]
+var GM = [
+  ['A','MEX','RSA','11 jun','Ciudad de México'],
+  ['A','KOR','CZE','11 jun','Guadalajara'],
+  ['B','CAN','BIH','12 jun','Toronto'],
+  ['D','USA','PAR','12 jun','Los Ángeles'],
+  ['B','QAT','SUI','13 jun','San Francisco'],
+  ['C','BRA','MAR','13 jun','Nueva Jersey'],
+  ['C','HAI','SCO','13 jun','Boston'],
+  ['D','AUS','TUR','13 jun','Vancouver'],
+  ['E','GER','CUW','14 jun','Houston'],
+  ['F','NED','JPN','14 jun','Dallas'],
+  ['E','CIV','ECU','14 jun','Philadelphia'],
+  ['F','SWE','TUN','14 jun','Monterrey'],
+  ['H','ESP','CPV','15 jun','Atlanta'],
+  ['G','BEL','EGY','15 jun','Seattle'],
+  ['H','KSA','URU','15 jun','Miami'],
+  ['G','IRN','NZL','15 jun','Los Ángeles'],
+  ['I','FRA','SEN','16 jun','Nueva Jersey'],
+  ['I','IRQ','NOR','16 jun','Boston'],
+  ['J','ARG','ALG','16 jun','Kansas City'],
+  ['J','AUT','JOR','16 jun','San Francisco'],
+  ['K','POR','COD','17 jun','Houston'],
+  ['L','ENG','CRO','17 jun','Dallas'],
+  ['L','GHA','PAN','17 jun','Toronto'],
+  ['K','UZB','COL','17 jun','Ciudad de México'],
+  ['A','CZE','RSA','18 jun','Atlanta'],
+  ['B','SUI','BIH','18 jun','Los Ángeles'],
+  ['B','CAN','QAT','18 jun','Vancouver'],
+  ['A','MEX','KOR','18 jun','Guadalajara'],
+  ['D','USA','AUS','19 jun','Seattle'],
+  ['C','SCO','MAR','19 jun','Boston'],
+  ['C','BRA','HAI','19 jun','Philadelphia'],
+  ['D','TUR','PAR','19 jun','San Francisco'],
+  ['F','NED','SWE','20 jun','Houston'],
+  ['E','GER','CIV','20 jun','Toronto'],
+  ['E','ECU','CUW','20 jun','Kansas City'],
+  ['F','TUN','JPN','20 jun','Monterrey'],
+  ['H','ESP','KSA','21 jun','Atlanta'],
+  ['G','BEL','IRN','21 jun','Los Ángeles'],
+  ['H','URU','CPV','21 jun','Miami'],
+  ['G','NZL','EGY','21 jun','Vancouver'],
+  ['J','ARG','AUT','22 jun','Dallas'],
+  ['I','FRA','IRQ','22 jun','Philadelphia'],
+  ['I','NOR','SEN','22 jun','Nueva Jersey'],
+  ['J','JOR','ALG','22 jun','San Francisco'],
+  ['K','POR','UZB','23 jun','Houston'],
+  ['L','ENG','GHA','23 jun','Boston'],
+  ['L','PAN','CRO','23 jun','Toronto'],
+  ['K','COL','COD','23 jun','Guadalajara'],
+  ['B','SUI','CAN','24 jun','Vancouver'],
+  ['B','BIH','QAT','24 jun','Los Ángeles'],
+  ['A','RSA','KOR','25 jun','Houston'],
+  ['A','MEX','CZE','25 jun','Kansas City'],
+  ['C','MAR','HAI','25 jun','Atlanta'],
+  ['C','SCO','BRA','25 jun','Dallas'],
+  ['D','PAR','AUS','25 jun','Seattle'],
+  ['D','TUR','USA','25 jun','Toronto'],
+  ['E','CUW','GER','26 jun','Miami'],
+  ['E','CIV','ECU','26 jun','Boston'],
+  ['F','JPN','NED','26 jun','Philadelphia'],
+  ['F','TUN','SWE','26 jun','San Francisco'],
+  ['G','EGY','BEL','26 jun','Nueva Jersey'],
+  ['G','IRN','NZL','26 jun','Los Ángeles'],
+  ['H','CPV','ESP','27 jun','Vancouver'],
+  ['H','URU','KSA','27 jun','Ciudad de México'],
+  ['I','SEN','IRQ','27 jun','Kansas City'],
+  ['I','NOR','FRA','27 jun','Seattle'],
+  ['J','ALG','AUT','27 jun','Guadalajara'],
+  ['J','JOR','ARG','27 jun','Atlanta'],
+  ['K','COD','UZB','27 jun','Toronto'],
+  ['K','COL','POR','27 jun','Houston'],
+  ['L','GHA','CRO','27 jun','Dallas'],
+  ['L','PAN','ENG','27 jun','Monterrey']
+];
+
+var KO_ROUNDS = [
+  { name: 'Dieciseisavos de Final — 28 jun al 3 jul', matches: [
+    {id:'r32_1',  d:'28 jun', v:'Dallas'},
+    {id:'r32_2',  d:'28 jun', v:'Miami'},
+    {id:'r32_3',  d:'29 jun', v:'Kansas City'},
+    {id:'r32_4',  d:'29 jun', v:'Atlanta'},
+    {id:'r32_5',  d:'30 jun', v:'Seattle'},
+    {id:'r32_6',  d:'30 jun', v:'Nueva Jersey'},
+    {id:'r32_7',  d:'1 jul',  v:'Houston'},
+    {id:'r32_8',  d:'1 jul',  v:'Los Ángeles'},
+    {id:'r32_9',  d:'2 jul',  v:'Boston'},
+    {id:'r32_10', d:'2 jul',  v:'San Francisco'},
+    {id:'r32_11', d:'2 jul',  v:'Toronto'},
+    {id:'r32_12', d:'2 jul',  v:'Philadelphia'},
+    {id:'r32_13', d:'3 jul',  v:'Vancouver'},
+    {id:'r32_14', d:'3 jul',  v:'Guadalajara'},
+    {id:'r32_15', d:'3 jul',  v:'Ciudad de México'},
+    {id:'r32_16', d:'3 jul',  v:'Monterrey'}
+  ]},
+  { name: 'Octavos de Final — 4 al 7 jul', matches: [
+    {id:'r16_1', d:'4 jul', v:'Dallas'},     {id:'r16_2', d:'4 jul', v:'Nueva Jersey'},
+    {id:'r16_3', d:'5 jul', v:'Houston'},    {id:'r16_4', d:'5 jul', v:'Seattle'},
+    {id:'r16_5', d:'6 jul', v:'Los Ángeles'},{id:'r16_6', d:'6 jul', v:'Atlanta'},
+    {id:'r16_7', d:'7 jul', v:'Kansas City'},{id:'r16_8', d:'7 jul', v:'Miami'}
+  ]},
+  { name: 'Cuartos de Final — 9 al 11 jul', matches: [
+    {id:'qf_1', d:'9 jul',  v:'Dallas'},     {id:'qf_2', d:'9 jul',  v:'Nueva Jersey'},
+    {id:'qf_3', d:'10 jul', v:'Los Ángeles'},{id:'qf_4', d:'11 jul', v:'Houston'}
+  ]},
+  { name: 'Semifinales — 14 y 15 jul', matches: [
+    {id:'sf_1', d:'14 jul', v:'Dallas'}, {id:'sf_2', d:'15 jul', v:'Atlanta'}
+  ]},
+  { name: 'Tercer Puesto — 18 jul', matches: [
+    {id:'tp_1', d:'18 jul', v:'Miami'}
+  ]},
+  { name: '🏆 Final — 19 jul', matches: [
+    {id:'final', d:'19 jul', v:'MetLife Stadium, Nueva Jersey'}
+  ]}
+];
+
+var scores = {};
+var koData = {};
+
+function t(code) { return TEAMS[code] || {name: code, flag: ''}; }
+
+function matchKey(g, h, a) { return g + '_' + h + '_' + a; }
+
+function saveData() {
+  try {
+    localStorage.setItem('mw26_sc', JSON.stringify(scores));
+    localStorage.setItem('mw26_ko', JSON.stringify(koData));
+    var el = document.getElementById('toast');
+    el.classList.add('show');
+    setTimeout(function(){ el.classList.remove('show'); }, 2200);
+  } catch(e) {}
+}
+
+function loadData() {
+  try {
+    var s = localStorage.getItem('mw26_sc'); if(s) scores = JSON.parse(s);
+    var k = localStorage.getItem('mw26_ko'); if(k) koData = JSON.parse(k);
+  } catch(e) {}
+}
+
+function updateScore(key, side, val) {
+  if (!scores[key]) scores[key] = {h:'', a:''};
+  scores[key][side] = val;
+  var card = document.getElementById('card_' + key);
+  if (card) card.classList.toggle('has-result', scores[key].h !== '' && scores[key].a !== '');
+  updateStats();
+}
+
+function updateStats() {
+  var jugados = 0, goles = 0;
+  for (var k in scores) {
+    var s = scores[k];
+    if (s.h !== '' && s.a !== '') {
+      jugados++;
+      goles += parseInt(s.h||0) + parseInt(s.a||0);
+    }
+  }
+  document.getElementById('statJugados').textContent = jugados;
+  document.getElementById('statGoles').textContent = goles;
+  document.getElementById('statRestantes').textContent = 48 - jugados;
+  document.getElementById('statPromGoles').textContent = jugados > 0 ? (goles/jugados).toFixed(1) : '—';
+}
+
+function renderMatches() {
+  var byGroup = {};
+  for (var i = 0; i < GM.length; i++) {
+    var m = GM[i], g = m[0];
+    if (!byGroup[g]) byGroup[g] = [];
+    byGroup[g].push(m);
+  }
+  var html = '';
+  var gKeys = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  for (var gi = 0; gi < gKeys.length; gi++) {
+    var g = gKeys[gi];
+    html += '<div class="group-block"><div class="group-label">Grupo ' + g + '</div>';
+    var list = byGroup[g] || [];
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      var hCode = m[1], aCode = m[2], date = m[3], venue = m[4];
+      var k = matchKey(g, hCode, aCode);
+      var sv = scores[k] || {h:'', a:''};
+      var hasRes = sv.h !== '' && sv.a !== '';
+      var hT = t(hCode), aT = t(aCode);
+      html += '<div class="match-card' + (hasRes ? ' has-result' : '') + '" id="card_' + k + '">' +
+        '<div class="team"><span class="team-flag">' + hT.flag + '</span><span>' + hT.name + '</span></div>' +
+        '<div class="score-block">' +
+          '<input type="number" min="0" max="99" class="score-input" value="' + sv.h + '" placeholder="—" ' +
+            'oninput="updateScore(\'' + k + '\',\'h\',this.value)" onblur="renderStandings()">' +
+          '<span class="score-sep">:</span>' +
+          '<input type="number" min="0" max="99" class="score-input" value="' + sv.a + '" placeholder="—" ' +
+            'oninput="updateScore(\'' + k + '\',\'a\',this.value)" onblur="renderStandings()">' +
+        '</div>' +
+        '<div class="team right"><span class="team-flag">' + aT.flag + '</span><span>' + aT.name + '</span></div>' +
+        '<div class="match-meta"><span>' + date + '</span><span>📍 ' + venue + '</span></div>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  document.getElementById('matchesContainer').innerHTML = html;
+  updateStats();
+}
+
+function calcStandings() {
+  var st = {};
+  var gKeys = Object.keys(GROUPS);
+  for (var gi = 0; gi < gKeys.length; gi++) {
+    var g = gKeys[gi];
+    st[g] = {};
+    var teams = GROUPS[g];
+    for (var ti = 0; ti < teams.length; ti++) {
+      st[g][teams[ti]] = {pts:0,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,dg:0};
+    }
+  }
+  for (var i = 0; i < GM.length; i++) {
+    var m = GM[i], g = m[0], hCode = m[1], aCode = m[2];
+    var k = matchKey(g, hCode, aCode);
+    var sv = scores[k];
+    if (sv && sv.h !== '' && sv.a !== '') {
+      var sh = parseInt(sv.h), sa = parseInt(sv.a);
+      if (isNaN(sh) || isNaN(sa)) continue;
+      var ht = st[g][hCode], at = st[g][aCode];
+      if (!ht || !at) continue;
+      ht.pj++; at.pj++;
+      ht.gf += sh; ht.gc += sa; at.gf += sa; at.gc += sh;
+      ht.dg = ht.gf - ht.gc; at.dg = at.gf - at.gc;
+      if (sh > sa)      { ht.pts+=3; ht.pg++; at.pp++; }
+      else if (sh < sa) { at.pts+=3; at.pg++; ht.pp++; }
+      else              { ht.pts++; ht.pe++; at.pts++; at.pe++; }
+    }
+  }
+  return st;
+}
+
+function renderStandings() {
+  var st = calcStandings();
+  var html = '';
+  var gKeys = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  for (var gi = 0; gi < gKeys.length; gi++) {
+    var g = gKeys[gi];
+    var entries = [];
+    for (var code in st[g]) entries.push([code, st[g][code]]);
+    entries.sort(function(a,b){ return b[1].pts - a[1].pts || b[1].dg - a[1].dg || b[1].gf - a[1].gf; });
+    html += '<div class="group-block"><div class="group-label">Grupo ' + g + '</div>' +
+      '<table class="standings-table"><thead><tr>' +
+      '<th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>PTS</th>' +
+      '</tr></thead><tbody>';
+    for (var i = 0; i < entries.length; i++) {
+      var code = entries[i][0], s = entries[i][1], pos = i+1;
+      var team = t(code);
+      var dgColor = s.dg > 0 ? '#2ecc71' : s.dg < 0 ? '#e74c3c' : 'var(--muted)';
+      var dgStr = (s.dg > 0 ? '+' : '') + s.dg;
+      html += '<tr><td><span class="pos-num pos-' + pos + '">' + pos + '</span>' + team.flag + ' ' + team.name + '</td>' +
+        '<td>' + s.pj + '</td><td>' + s.pg + '</td><td>' + s.pe + '</td><td>' + s.pp + '</td>' +
+        '<td>' + s.gf + '</td><td>' + s.gc + '</td>' +
+        '<td style="color:' + dgColor + '">' + dgStr + '</td>' +
+        '<td class="pts-cell">' + s.pts + '</td></tr>';
+    }
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('standingsContainer').innerHTML = html;
+}
+
+function updateKO(id, side, val) {
+  if (!koData[id]) koData[id] = {h:'',a:'',sh:'',sa:''};
+  koData[id][side] = val;
+}
+function updateKOScore(id, side, val) {
+  if (!koData[id]) koData[id] = {h:'',a:'',sh:'',sa:''};
+  koData[id][side] = val;
+  var el = document.getElementById('ko_' + id);
+  if (el) el.classList.toggle('has-result', koData[id].sh !== '' && koData[id].sa !== '');
+}
+
+function renderKnockout() {
+  var html = '';
+  for (var ri = 0; ri < KO_ROUNDS.length; ri++) {
+    var round = KO_ROUNDS[ri];
+    html += '<div class="ko-round-title">' + round.name + '</div>';
+    for (var mi = 0; mi < round.matches.length; mi++) {
+      var m = round.matches[mi];
+      var d = koData[m.id] || {h:'',a:'',sh:'',sa:''};
+      var hasRes = d.sh !== '' && d.sa !== '';
+      var num = ri === 0 ? (mi + 49) : '';
+      var label = ri === 0 ? 'Partido ' + num : (ri === 5 ? 'FINAL' : 'Partido');
+      html += '<div class="ko-match' + (hasRes ? ' has-result' : '') + '" id="ko_' + m.id + '">' +
+        '<input type="text" class="ko-team-input" placeholder="' + label + ' — Local" value="' + (d.h||'') + '" oninput="updateKO(\'' + m.id + '\',\'h\',this.value)">' +
+        '<div class="score-block">' +
+          '<input type="number" min="0" max="99" class="score-input" value="' + (d.sh||'') + '" placeholder="—" oninput="updateKOScore(\'' + m.id + '\',\'sh\',this.value)">' +
+          '<span class="score-sep">:</span>' +
+          '<input type="number" min="0" max="99" class="score-input" value="' + (d.sa||'') + '" placeholder="—" oninput="updateKOScore(\'' + m.id + '\',\'sa\',this.value)">' +
+        '</div>' +
+        '<input type="text" class="ko-team-input right" placeholder="Visitante" value="' + (d.a||'') + '" oninput="updateKO(\'' + m.id + '\',\'a\',this.value)">' +
+        '<div class="match-meta"><span>' + m.d + '</span><span>📍 ' + m.v + '</span></div>' +
+      '</div>';
+    }
+  }
+  document.getElementById('knockoutContainer').innerHTML = html;
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'posiciones') renderStandings();
+}
+
+loadData();
+renderMatches();
+renderStandings();
+renderKnockout();
+</script>
+</body>
+</html>
